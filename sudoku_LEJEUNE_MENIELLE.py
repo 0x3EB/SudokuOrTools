@@ -189,7 +189,9 @@ if __name__ == '__main__':
     level = eval(input('Enter a number between 1 ans 5\n'))
     assert level > 0 and level < 6
     grid=generatePlate(level)
+    print('unsolved sudoku grid :')
     print_sudoku(grid)
     print('\n')
+    print('solved sudoku grid :')
     sovledgrid = solve_sudoku(grid)
     print_sudoku(sovledgrid)
