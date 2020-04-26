@@ -3,31 +3,15 @@
 """
 Created on Mon Apr  6 14:52:35 2020
 
-@author: Sébastien LEJEUNE IBO Alternance
+@author: Sébastien LEJEUNE | MENIELLE IBO Alternance
 """
 from ortools.sat.python import cp_model
 from random import sample
 
-base  = 3
-side  = base*base
+base  = 3 #size of the square
+side  = base*base #size of the board
 
 def pattern(r,c):
-    '''
-    
-
-    Parameters
-    ----------
-    r : TYPE
-        DESCRIPTION.
-    c : TYPE
-        DESCRIPTION.
-
-    Returns
-    -------
-    TYPE
-        DESCRIPTION.
-
-    '''
     return (base*(r%base)+r//base+c)%side
 
 def shuffle(s):
@@ -71,7 +55,7 @@ def generatePlate(level):
     board = [ [nums[pattern(r,c)] for c in cols] for r in rows ]
     
     squares = side*side
-    nbOfzeros = (side*side)-DifficultyChoice(level)
+    nbOfzeros = (side*side)-DifficultyChoice(level) # get the number of 0 from the Difficulty selected
     for p in sample(range(squares),nbOfzeros+1):
         board[p//side][p%side] = 0
     return board
@@ -91,7 +75,7 @@ def DifficultyChoice(level):
         An int that correspond of the number that will display in the grid.
 
     '''
-    nb = 0
+    nb = 0 #number of numbers
     if level==1 : nb=50
     elif level==2 : nb=40
     elif level==3 : nb=33
@@ -101,50 +85,47 @@ def DifficultyChoice(level):
 
 def solve_sudoku(initial_grid):
     '''
-
+    Solving the sudoku grid using CP OR TOOLS
 
     Parameters
     ----------
-    initial_grid : TYPE
-        DESCRIPTION.
+    initial_grid : tab
+        Correspond of the unsolved grid  .
 
     Returns
     -------
-    tab : TYPE
-        DESCRIPTION.
+    tab : tab
+        The solved grid.
 
     '''
-    # Create the model.
     model = cp_model.CpModel()
 
     cell_size = base
     line_size = side
-    line = range(line_size)
-    cell = range(cell_size)
-
-    #initial_grid = generatePlate(level)
+    line = range(line_size) 
+    cell = range(cell_size) 
 
     grid = {
         (i, j): model.NewIntVar(1, line_size, 'grid %i %i' % (i, j))
         for i in line for j in line
     }
 
-    # AllDifferent on rows.
+    
     for i in line:
-        model.AddAllDifferent([grid[(i, j)] for j in line])
+        model.AddAllDifferent([grid[(i, j)] for j in line]) # AllDifferent on rows
 
-    # AllDifferent on columns.
+    
     for j in line:
-        model.AddAllDifferent([grid[(i, j)] for i in line])
+        model.AddAllDifferent([grid[(i, j)] for i in line]) # AllDifferent on columns
 
-    # AllDifferent on cells.
+    
     for i in cell:
         for j in cell:
             one_cell = [
                 grid[(i * cell_size + di, j * cell_size + dj)] for di in cell
                 for dj in cell
             ]
-            model.AddAllDifferent(one_cell)
+            model.AddAllDifferent(one_cell) # AllDifferent in case
 
     # Initial values.
     for i in line:
@@ -152,14 +133,13 @@ def solve_sudoku(initial_grid):
             if initial_grid[i][j]:
                 model.Add(grid[(i, j)] == initial_grid[i][j])
 
-    # Solve and print out the solution.
     solver = cp_model.CpSolver()
     status = solver.Solve(model)
     if status == cp_model.FEASIBLE:
         tab = []
         for i in line:
             tab.append([int(solver.Value(grid[(i, j)])) for j in line])
-    return tab
+    return tab #return the sudoku solved
 
 def print_sudoku(board):
     '''
